@@ -15,7 +15,7 @@ import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { IAuthPayload } from 'src/types/common.types';
+import { IAuthPayload, IDynamicObject } from 'src/types/common.types';
 import { UserDeviceDto } from './dto/user-device.dto';
 import { UserDeviceService } from './device.service';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -70,12 +70,9 @@ export class AuthController {
   ) {
     const loginPayload = await this.authService.login(reqBody);
     if (loginPayload.user) {
-      this.userDeviceService.registerDevice({
+      this.registerDevice({
+        headers,
         userId: loginPayload.user._id.toString(),
-        deviceId: headers['device-id'],
-        platform: headers['device-os'],
-        isSignedOut: false,
-        lastSignedInAt: new Date(),
       });
     }
     return {
@@ -112,5 +109,21 @@ export class AuthController {
   @HttpCode(200)
   profile(@CurrentUser() user: IAuthPayload) {
     return user;
+  }
+
+  private registerDevice({
+    headers,
+    userId,
+  }: {
+    headers: IDynamicObject;
+    userId: string;
+  }) {
+    return this.userDeviceService.registerDevice({
+      userId,
+      deviceId: headers['device-id'],
+      platform: headers['device-os'],
+      isSignedOut: false,
+      lastSignedInAt: new Date(),
+    });
   }
 }
