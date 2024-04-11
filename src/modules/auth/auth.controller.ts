@@ -47,12 +47,9 @@ export class AuthController {
     const newUser = await this.authService.register(reqBody);
 
     if (newUser) {
-      let data = await this.userDeviceService.registerDevice({
-        userId: newUser.id,
-        deviceId: headers['device-id'],
-        platform: headers['device-os'],
-        isSignedOut: false,
-        lastSignedInAt: new Date(),
+      this.registerDevice({
+        headers,
+        userId: newUser._id.toString(),
       });
       return {
         message: 'User registered successfully!',
